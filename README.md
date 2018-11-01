@@ -1,3 +1,3 @@
-# Discord MusicBot Helper
+# Discord  Helper
 
 # Making your life much better
