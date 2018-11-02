@@ -27,8 +27,6 @@ async def on_ready():
     while True:
         Raw = (irc.recv(100).decode())
         if not Raw.endswith(':quit'):
-            pass
-        else:
             Recive = Raw
             print(Recive)
 
