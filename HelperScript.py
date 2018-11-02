@@ -35,7 +35,7 @@ async def check(ctx):
            #debug print(Player)
             irc.send('PRIVMSG BanchoBot stats '.encode() + Player.encode() + ' \r\n'.encode())
             Check = 0
-            while Check < 5:
+            while Check < 10:
                 Recive = irc.recv(100).decode()
                 OnlineSt = Recive.find('Idle:')
                 PlaySt = Recive.find('Playing:')
@@ -44,31 +44,31 @@ async def check(ctx):
                 TestSt = Recive.find('Testing:')
                 AfkSt = Recive.find('Afk:')
                 if OnlineSt > 0:
-                    Check = 5
+                    Check = 10
                     await ctx.send(Player + ' just Online!')
                 else:
                     if PlaySt > 0:
-                        Check = 5
+                        Check = 10
                         await ctx.send(Player + ' just Playing!')
                     else:
                         if MapSt > 0:
-                            Check = 5
+                            Check = 10
                             await ctx.send(Player + ' just Editing!')
                         else:
                             if ModSt > 0:
-                                Check = 5
+                                Check = 10
                                 await ctx.send(Player + ' just Modding!')
                             else:
                                 if TestSt > 0:
-                                    Check = 5
+                                    Check = 10
                                     await ctx.send(Player + ' just Testing the map!')
                                 else:
                                     if AfkSt > 0:
-                                        Check = 5
+                                        Check = 10
                                         await ctx.send(Player + ' just AFK!')
                                     else:
-                                        Check = Check + 0.1 # 50 cycle retries
-                                        if Check > 5 | (TestSt == 0 & ModSt == 0 & MapSt == 0 & TestSt == 0 & OnlineSt == 0 & PlaySt == 0):
+                                        Check = Check + 0.1 # 100 cycle retries
+                                        if Check > 10| (TestSt == 0 & ModSt == 0 & MapSt == 0 & TestSt == 0 & OnlineSt == 0 & PlaySt == 0):
                                             await ctx.send(Player + ' Offline :(')
 @bot.command()
 async def chill(ctx):
