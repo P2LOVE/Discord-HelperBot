@@ -25,11 +25,10 @@ async def on_ready():
     print(time.ctime())
     print('---------------')
     while True:
-        Raw = (irc.recv(100).decode())
-        if not Raw.endswith(':quit'):
+        Raw = irc.recv(4096).decode()
+        if not Raw.find('QUIT') != -1:
             Recive = Raw
             print(Recive)
-
 @bot.command(pass_context=True)
 async def check(ctx):
         print('XUI!')
