@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import json, urllib.request, socket, sys
+import json, urllib.request, socket, sys, time, datetime
 Server = "irc.ppy.sh"
 Port = 6667
 token = open('key.txt') # 1st Line -  IRC Username; 2nd - IRC Password; 3rd - Discord Bot Token
@@ -16,18 +16,25 @@ irc.send(('PASS ' + ServerPassword + '\r\n').encode()) # Read Password from key.
 irc.send(('NICK ' + Username + '\r\n').encode()) # Same 
 irc.send(('END \r\n').encode())
 print("Connected to: BanchoIRC")
-data = irc.recv(2048).decode() # Welcome message
-print(data)
-
 @bot.event
 async def on_ready():
     print('---------------')
     print('Welcome back!')
     print(bot.user.name)
     print(bot.user.id)
+    print(time.ctime())
     print('---------------')
+    while True:
+        Raw = (irc.recv(100).decode())
+        if not Raw.endswith(':quit'):
+            pass
+        else:
+            Recive = Raw
+            print(Recive)
+
 @bot.command(pass_context=True)
 async def check(ctx):
+        print('XUI!')
         Msg = ctx.message.content
         #debug print(Msg)
         if Msg.find('check') > 0 :
@@ -41,40 +48,39 @@ async def check(ctx):
                     irc.send('PRIVMSG BanchoBot stats '.encode() + Player.encode() + ' \r\n'.encode())
                     Check = 0
                     while Check < 10:
-                        Recive = irc.recv(100).decode()
-                        OnlineSt = Recive.find('Idle:')
-                        PlaySt = Recive.find('Playing:')
-                        MapSt = Recive.find('Editing:')
-                        ModSt = Recive.find('Modding:')
-                        TestSt = Recive.find('Testing:')
-                        AfkSt = Recive.find('Afk:')
-                        if OnlineSt > 0:
-                            Check = 10
-                            await ctx.send(Player + ' just Online!')
-                        else:
-                            if PlaySt > 0:
+                            OnlineSt = Recive.find('Idle:')
+                            PlaySt = Recive.find('Playing:')
+                            MapSt = Recive.find('Editing:')
+                            ModSt = Recive.find('Modding:')
+                            TestSt = Recive.find('Testing:')
+                            AfkSt = Recive.find('Afk:')
+                            if OnlineSt > 0:
                                 Check = 10
-                                await ctx.send(Player + ' just Playing!')
+                                await ctx.send(Player + ' just Online!')
                             else:
-                                if MapSt > 0:
+                                if PlaySt > 0:
                                     Check = 10
-                                    await ctx.send(Player + ' just Editing!')
+                                    await ctx.send(Player + ' just Playing!')
                                 else:
-                                    if ModSt > 0:
+                                    if MapSt > 0:
                                         Check = 10
-                                        await ctx.send(Player + ' just Modding!')
+                                        await ctx.send(Player + ' just Editing!')
                                     else:
-                                        if TestSt > 0:
+                                        if ModSt > 0:
                                             Check = 10
-                                            await ctx.send(Player + ' just Testing the map!')
+                                            await ctx.send(Player + ' just Modding!')
                                         else:
-                                            if AfkSt > 0:
+                                            if TestSt > 0:
                                                 Check = 10
-                                                await ctx.send(Player + ' just AFK!')
+                                                await ctx.send(Player + ' just Testing the map!')
                                             else:
-                                                Check = Check + 0.1 # 100 cycle retries
-                                                if Check > 10| (TestSt == 0 & ModSt == 0 & MapSt == 0 & TestSt == 0 & OnlineSt == 0 & PlaySt == 0):
-                                                    await ctx.send(Player + ' Offline :(')
+                                                if AfkSt > 0:
+                                                    Check = 10
+                                                    await ctx.send(Player + ' just AFK!')
+                                                else:
+                                                    Check = Check + 0.1 # 100 cycle retries
+                                                    if Check > 10 | (TestSt == 0 & ModSt == 0 & MapSt == 0 & TestSt == 0 & OnlineSt == 0 & PlaySt == 0):
+                                                        await ctx.send(Player + ' Offline :(')
 @bot.command()
 async def chill(ctx):
     chillrdy = '1'
