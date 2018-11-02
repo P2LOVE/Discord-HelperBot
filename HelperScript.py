@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import json, urllib.request, socket, sys
+import json, urllib.request, socket, sys, time, datetime
 Server = "irc.ppy.sh"
 Port = 6667
 token = open('key.txt') # 1st Line -  IRC Username; 2nd - IRC Password; 3rd - Discord Bot Token
@@ -9,6 +9,7 @@ Username = Key[0]
 ServerPassword = Key[1]
 chillrdy = int('1')
 bot = commands.Bot(command_prefix='~', description='Helping us help you help us all')
+bot.remove_command('help')
 print('---------------')
 irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Set IRC socket
 irc.connect((Server, Port))
@@ -25,51 +26,66 @@ async def on_ready():
     print('Welcome back!')
     print(bot.user.name)
     print(bot.user.id)
+    print(time.ctime())
     print('---------------')
 @bot.command(pass_context=True)
 async def check(ctx):
         Msg = ctx.message.content
-        #debug print(Msg)
         if Msg.find('check') > 0 :
             Player = Msg[7:] # Argument after ~check
-           #debug print(Player)
-            irc.send('PRIVMSG BanchoBot stats '.encode() + Player.encode() + ' \r\n'.encode())
-            Check = 0
-            while Check < 5:
-                Recive = irc.recv(100).decode()
-                OnlineSt = Recive.find('Idle:')
-                PlaySt = Recive.find('Playing:')
-                MapSt = Recive.find('Editing:')
-                ModSt = Recive.find('Modding:')
-                TestSt = Recive.find('Testing:')
-                AfkSt = Recive.find('Afk:')
-                if OnlineSt > 0:
-                    Check = 5
-                    await ctx.send(Player + ' just Online!')
+            print(Player)
+            if Player == "MyHeroMismagius":
+                await ctx.send('My creator always online in my heart <3')
+            else:
+                if Player ==  "p2love":
+                    await ctx.send('My creator always online in my heart <3')
+
                 else:
-                    if PlaySt > 0:
-                        Check = 5
-                        await ctx.send(Player + ' just Playing!')
-                    else:
-                        if MapSt > 0:
-                            Check = 5
-                            await ctx.send(Player + ' just Editing!')
+                    irc.send('PRIVMSG BanchoBot stats '.encode() + Player.encode() + ' \r\n'.encode())
+                    Check = 0
+                    while Check < 30:
+                        ReciveRaw = irc.recv(100).decode()
+                        if ReciveRaw.endswith(':quit'):
+                            Recive = ''
                         else:
-                            if ModSt > 0:
-                                Check = 5
-                                await ctx.send(Player + ' just Modding!')
+                            Recive = ReciveRaw
+                        print(Recive)
+                        OnlineSt = Recive.find('Idle:')
+                        PlaySt = Recive.find('Playing:')
+                        MpSt = Recive.find('Multiplaying:')
+                        MplSt = Recive.find('Multiplayer:')
+                        MapSt = Recive.find('Editing:')
+                        ModSt = Recive.find('Modding:')
+                        TestSt = Recive.find('Testing:')
+                        AfkSt = Recive.find('Afk:')
+                        SubSt = Recive.find('Submitting:')
+                        if OnlineSt > -1:
+                            Check = 30
+                            await ctx.send(Player + ' just Online!')
+                        else:
+                            if PlaySt > -1 | MpSt > -1 | MplSt > -1:
+                                Check = 30
+                                await ctx.send(Player + ' just Playing!')
                             else:
-                                if TestSt > 0:
-                                    Check = 5
-                                    await ctx.send(Player + ' just Testing the map!')
+                                if MapSt > -1 | SubSt > -1:
+                                    Check = 30
+                                    await ctx.send(Player + ' just Editing!')
                                 else:
-                                    if AfkSt > 0:
-                                        Check = 5
-                                        await ctx.send(Player + ' just AFK!')
+                                    if ModSt > -1:
+                                        Check = 30
+                                        await ctx.send(Player + ' just Modding!')
                                     else:
-                                        Check = Check + 0.1 # 50 cycle retries
-                                        if Check > 5 | (TestSt == 0 & ModSt == 0 & MapSt == 0 & TestSt == 0 & OnlineSt == 0 & PlaySt == 0):
-                                            await ctx.send(Player + ' Offline :(')
+                                        if TestSt > -1:
+                                            Check = 30
+                                            await ctx.send(Player + ' just Testing the map!')
+                                        else:
+                                            if AfkSt > -1:
+                                                Check = 30
+                                                await ctx.send(Player + ' just AFK!')
+                                            else:
+                                                Check = Check + 0.1 
+                                                if Check > 30 | (SubSt == 0 & TestSt == 0 & ModSt == 0 & MapSt == 0 & MpSt == 0 & MplSt == 0 & OnlineSt == 0 & PlaySt == 0 & AfkSt == 0):
+                                                    await ctx.send(Player + ' Offline :(')
 @bot.command()
 async def chill(ctx):
     chillrdy = '1'
