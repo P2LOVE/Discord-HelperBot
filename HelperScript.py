@@ -68,7 +68,6 @@ async def check(ctx):
                                         await ctx.send(Player + ' just AFK!')
                                     else:
                                         Check = Check + 0.1 # 50 cycle retries
-                                        print(Check)
                                         if Check > 5 | (TestSt == 0 & ModSt == 0 & MapSt == 0 & TestSt == 0 & OnlineSt == 0 & PlaySt == 0):
                                             await ctx.send(Player + ' Offline :(')
 @bot.command()
