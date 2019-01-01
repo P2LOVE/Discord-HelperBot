@@ -1,7 +1,7 @@
 import discord
-from discord.ext import commands
 import json, urllib.request, socket, sys, time, datetime
 import asyncio
+from asyncio import sleep
 
 Server = "irc.ppy.sh"
 Port = 6667
@@ -9,8 +9,8 @@ token = open('key.txt') # 1st Line -  IRC Username; 2nd - IRC Password; 3rd - Di
 Key = token.readlines()
 Username = Key[0]
 ServerPassword = Key[1]
-chillrdy = int('1')
-bot = commands.Bot(command_prefix='~', description='Helping us help you help us all')
+Recive = None
+bot = discord.Client()
 print('---------------')
 irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Set IRC socket
 irc.connect((Server, Port))
@@ -19,13 +19,13 @@ irc.send(('NICK ' + Username + '\r\n').encode()) # Same
 irc.send(('END \r\n').encode())
 print("Connected to: BanchoIRC")
 
-Recive = None
 async def receiver():
     while True:
-        Raw = irc.recv(4096).decode()
-        if not Raw.find('QUIT') != -1:
-            Recive = Raw
-            print(Recive)
+        r = irc.recv(4096)
+        if not r.find('QUIT') != -1:
+            Recive.append(r)
+            break
+    return Recive
 
 @bot.event
 async def on_ready():
@@ -36,98 +36,67 @@ async def on_ready():
     print(time.ctime())
     print('---------------')
 
-    asyncio.ensure_future(receiver)
-    
-@bot.command(pass_context=True)
-async def check(ctx):
-        print('XUI!')
-        Msg = ctx.message.content
-        #debug print(Msg)
-        if Msg.find('check') > 0 :
-            Player = Msg[7:] # Argument after ~check
-            if Player == "MyHeroMismagius":
-                await ctx.send('My creator always online in my heart <3')
-            else:
-                if Player ==  "p2love":
-                    await ctx.send('My creator always online in my heart <3')
+@bot.event
+async def on_message(message):
+    author = message.author
+    authorid = message.author.id
+    if message.content == 'notice me senpai':
+        await bot.send_message(message.channel, '<@' + authorid + '>')
+
+@bot.event
+async def on_message(message):
+    if message.content.startswith('~check'):
+        Check = None
+        cntx = message.content
+        Player = cntx[7:] # Argument after ~check
+        if (Player == 'MyHeroMismagius') or (Player == 'p2love'):
+            await bot.send_message(message.channel, 'My creator always online in my heart <3')
+        else:
+            irc.send('PRIVMSG BanchoBot stats '.encode() + Player.encode() + ' \r\n'.encode())
+            for Check in range(10):
+                if not Recive:
+                    break
+                    loop.close()
+                OnlineSt = Recive.find('Idle:')
+                PlaySt = Recive.find('Playing:')
+                MapSt = Recive.find('Editing:')
+                ModSt = Recive.find('Modding:')
+                TestSt = Recive.find('Testing:')
+                AfkSt = Recive.find('Afk:')
+                if OnlineSt != -1:
+                    await bot.send_message(Player + ' just Online!')
+                    loop.close()
+                    break
                 else:
-                    irc.send('PRIVMSG BanchoBot stats '.encode() + Player.encode() + ' \r\n'.encode())
-                    Check = 0
-                    while Check < 10:
-                        if not Recive:
+                    if PlaySt != -1:
+                        await bot.send_message(Player + ' just Playing!')
+                        loop.close()
+                        break
+                    else:
+                        if MapSt != -1:
+                            await bot.send_message(Player + ' just Editing!')
+                            loop.close()
                             break
-                        OnlineSt = Recive.find('Idle:')
-                        PlaySt = Recive.find('Playing:')
-                        MapSt = Recive.find('Editing:')
-                        ModSt = Recive.find('Modding:')
-                        TestSt = Recive.find('Testing:')
-                        AfkSt = Recive.find('Afk:')
-                        if OnlineSt > 0:
-                            Check = 10
-                            await ctx.send(Player + ' just Online!')
                         else:
-                            if PlaySt > 0:
-                                Check = 10
-                                await ctx.send(Player + ' just Playing!')
+                            if ModSt != -1:
+                                await bot.send_message(Player + ' just Modding!')
+                                loop.close()
+                                break
                             else:
-                                if MapSt > 0:
-                                    Check = 10
-                                    await ctx.send(Player + ' just Editing!')
+                                if TestSt != -1:
+                                    await bot.send_message(Player + ' just Testing the map!')
+                                    loop.close()
+                                    break
                                 else:
-                                    if ModSt > 0:
-                                        Check = 10
-                                        await ctx.send(Player + ' just Modding!')
+                                    if AfkSt != -1:
+                                        await bot.send_message(Player + ' just AFK!')
+                                        loop.close()
+                                        break
                                     else:
-                                        if TestSt > 0:
-                                            Check = 10
-                                            await ctx.send(Player + ' just Testing the map!')
-                                        else:
-                                            if AfkSt > 0:
-                                                Check = 10
-                                                await ctx.send(Player + ' just AFK!')
-                                            else:
-                                                Check = Check + 0.1 # 100 cycle retries
-                                                if Check > 10 | (TestSt == 0 & ModSt == 0 & MapSt == 0 & TestSt == 0 & OnlineSt == 0 & PlaySt == 0):
-                                                    await ctx.send(Player + ' Offline :(')
-@bot.command()
-async def chill(ctx):
-    chillrdy = '1'
-    
-    embed = discord.Embed(title="Best Chill Mixes", description="5 chillest mixes ever", color=0xef3976)
-    
-    embed.add_field(name="C", value="Random SuicideShepp Chill Mix")
-
-    embed.add_field(name="H", value="1 Hour Chill Mix")
-
-    embed.add_field(name="I", value="2 Hour Chill Mix")
-    
-    embed.add_field(name="L", value="Rameses B Chill Mix")
-                    
-    embed.add_field(name="LL", value="Random Mix")
-
-    await ctx.send(embed=embed)
-
-    if chillrdy == '1':
-        @bot.command()
-        async def C(ctx):
-            chillrdy = '0'
-            await ctx.send('!!!play https://www.youtube.com/watch?v=z3PpphdrEmU')
-        @bot.command()
-        async def H(ctx):
-            chillrdy = 0
-            await ctx.send('!!!play https://www.youtube.com/watch?v=H9-feB5dWhY')
-        @bot.command()
-        async def I(ctx):
-            chillrdy = 0
-            await ctx.send('!!!play https://www.youtube.com/watch?v=fWRISvgAygU')
-        @bot.command()
-        async def L(ctx):
-            chillrdy = 0
-            await ctx.send('!!!play https://www.youtube.com/watch?v=KP_LuzXROlg')
-        @bot.command()
-        async def LL(ctx):
-            chillrdy = 0
-            await ctx.send('!!!play https://www.youtube.com/watch?v=z3PpphdrEmU')
-
+                                        if Check == 9 | (TestSt == 0 & ModSt == 0 & MapSt == 0 & TestSt == 0 & OnlineSt == 0 & PlaySt == 0): # double check \\ on test
+                                            await bot.send_message(Player + ' Offline :(')
+                                            Recive = None
+                                            loop.close()
+                                            break
 
 bot.run(Key[2])
