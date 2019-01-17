@@ -5,8 +5,9 @@ from asyncio import sleep
 
 Server = "irc.ppy.sh"
 Port = 6667
-roles_txt = open('roles.txt') # 1 line = 1 role
-list_of_roles = roles_txt.readlines()
+rls = open('roles.txt') # 1 line = 1 role
+listr = rls.readlines()
+role1 = listr[0]
 token = open('key.txt') # 1st Line -  IRC Username; 2nd - IRC Password; 3rd - Discord Bot Token
 Key = token.readlines()
 mycreator = '266419230587617292'
@@ -58,7 +59,7 @@ async def on_message(message):
         authorid = message.author.id
         if (authorid == mycreator):
             server = bot.get_server(message.server)
-            role = discord.utils.get(server.roles, name=list_of_roles[0]) 
+            role = discord.utils.get(message.server.roles, name=(role1)) 
             await bot.add_roles(author, role)
             await bot.send_message(message.channel, 'Welcome back, senpai ♥')
 
