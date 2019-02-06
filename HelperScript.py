@@ -23,14 +23,6 @@ irc.send(('NICK ' + Username + '\r\n').encode()) # Same
 irc.send(('END \r\n').encode())
 print("Connected to: BanchoIRC")
 
-async def receiver():
-    while True:
-        r = irc.recv(4096)
-        if not r.find('QUIT') != -1:
-            Recive.append(r)
-            break
-    return Recive
-
 @bot.event
 async def on_ready():
     print('---------------')
@@ -48,13 +40,26 @@ async def on_message(message):
         await bot.send_message(message.channel, '<@' + authorid + '>')
 
     if message.content.startswith('~check'):
-        Check = None
         cntx = message.content
         Player = cntx[7:] # Argument after ~check
         if (Player == 'MyHeroMismagius') or (Player == 'p2love'):
             await bot.send_message(message.channel, 'My creator always online in my heart <3')
+        else:
+            irc.send('WHOIS '.encode() + Player.encode() + ' \r\n'.encode())
+            while True:
+                r = irc.recv(4096)
+                if r.decode().find('QUIT') != -1 and r != -1:
+                    print(r.decode())
+                    if r.decode().find(Player) and r.decode().find('End of /WHOIS list') != -1:
+                        await bot.send_message(message.channel, '`' + Player + '` is online! :3')
+                        break
+                    else:
+                        if r.decode().find(Player) and r.decode().find('No such nick/channel') != -1:
+                            await bot.send_message(message.channel, '`'+ Player + '` seems like offline :(')
+                            break
+
     
-    if message.content == 'authorize':
+    if message.content == '~authorize':
         author = message.author
         authorid = message.author.id
         if (authorid == mycreator):
@@ -62,5 +67,11 @@ async def on_message(message):
             role = discord.utils.get(message.server.roles, name=(role1)) 
             await bot.add_roles(author, role)
             await bot.send_message(message.channel, 'Welcome back, senpai ♥')
+        else:
+            await bot.send_message(message.channel, 'You are not my senpai!')
 
+    if message.content.startswith('~channels'):
+        cntx = message.content
+        Player = cntx[10:]
+        await bot.send_message(message.channel, 'WIP')
 bot.run(Key[2])
