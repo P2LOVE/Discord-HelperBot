@@ -115,8 +115,11 @@ async def on_message(message):
                                 await bot.send_message(message.channel, '`'+ Player + "` don't composed in any channels")
                                 break
                             else:
+                                num = raw.count("#")
+                                for i in range((num-1)):
+                                    rawChan = rawChan + raw.split("#")[i+2]
                                 Channels = rawChan.split(":")[0]
-                                await bot.send_message(message.channel, '`'+ Player + "'s` channels: ```#" + Channels + '```')
+                                await bot.send_message(message.channel, '`'+ Player + "'s` channels: ```" + Channels + '```')
                                 break
                         else:
                             if r.decode().find(Player) and r.decode().find('No such nick/channel') != -1:
