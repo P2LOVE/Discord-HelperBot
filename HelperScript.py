@@ -118,8 +118,9 @@ async def on_message(message):
                                 num = raw.count("#")
                                 for i in range((num-1)):
                                     rawChan = rawChan + raw.split("#")[i+2]
-                                Channels = rawChan.split(":")[0]
-                                await bot.send_message(message.channel, '`'+ Player + "'s` channels: ```" + Channels + '```')
+                                Channel = rawChan.split(":")[0]
+                                ChannelH = Channel.rstrip().replace(" ", " #")
+                                await bot.send_message(message.channel, '`'+ Player + "'s` channels: ```#" + ChannelH + '```')
                                 break
                         else:
                             if r.decode().find(Player) and r.decode().find('No such nick/channel') != -1:
