@@ -96,6 +96,17 @@ async def on_message(message):
         else:
             await bot.send_message(message.channel, 'You are not my senpai!')
 
+    if message.content == '~rename':
+        author = message.author
+        authorid = message.author.id
+        if (authorid == mycreator):
+            server = bot.get_server(message.server)
+            role = discord.utils.get(message.server.roles, name=(role1)) 
+            await bot.edit_role(message.server, role, name='D♿T')
+            await bot.send_message(message.channel, 'Done!')
+        else:
+            await bot.send_message(message.channel, 'You are not my senpai!')
+
     if message.content.startswith('~channels'):
         cntx = message.content
         Player = cntx[10:]
