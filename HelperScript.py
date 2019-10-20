@@ -7,7 +7,6 @@ Server = "irc.ppy.sh"
 Port = 6667
 rls = open('roles.txt') # 1 line = 1 role
 listr = rls.readlines()
-role1 = listr[0]
 token = open('key.txt') # 1st Line -  IRC Username; 2nd - IRC Password; 3rd - osu!Api key; 4th - Discord Bot Token
 Key = token.readlines()
 mycreator = '266419230587617292'
@@ -48,7 +47,7 @@ async def on_message(message):
         apikey = ak[:-1]
         apiurl = get_users + apikey + user
         jsonurl = urllib.request.urlopen(apiurl)
-        info = json.loads(jsonurl.read())
+        info = json.loads(jsonurl.read().decode('utf-8'))
         if info == []:
             Invalid = '1'
             info = None
