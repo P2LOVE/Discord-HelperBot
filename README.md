@@ -4,6 +4,10 @@
 
 GUIDE How to Use: https://github.com/P2LOVE/Discord-HelperBot/wiki
 
+REQUIRMENTS:
+discord.py==0.16.12
+(python3.5)
+
 ###
 
 
